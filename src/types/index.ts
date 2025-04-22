@@ -6,16 +6,12 @@ export interface Message {
 }
 
 export interface TravelPreferences {
-  destination?: string;
-  budget?: number;
-  departureDate?: Date;
-  returnDate?: Date;
-  travelers?: number;
-  travelStyle?: string[];
-  accommodationType?: string[];
-  activities?: string[];
-  diningPreferences?: string[];
-  specialRequirements?: string[];
+  destination: string;
+  budget: string;
+  departureDate: Date | null;
+  returnDate: Date | null;
+  travelers: number;
+  interests: string[];
 }
 
 export interface FlightOption {

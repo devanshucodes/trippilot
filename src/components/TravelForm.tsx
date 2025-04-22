@@ -7,16 +7,24 @@ import "react-datepicker/dist/react-datepicker.css";
 interface TravelFormProps {
   onSubmit: (formData: any) => void;
   isLoading: boolean;
+  error?: string | null;
 }
 
-const TravelForm: React.FC<TravelFormProps> = ({ onSubmit, isLoading }) => {
-  const [formData, setFormData] = useState({
+const TravelForm: React.FC<TravelFormProps> = ({ onSubmit, isLoading, error }) => {
+  const [formData, setFormData] = useState<{
+    destination: string;
+    departureDate: Date | null;
+    returnDate: Date | null;
+    travelers: number;
+    budget: string;
+    interests: string[];
+  }>({
     destination: '',
     departureDate: null,
     returnDate: null,
     travelers: 1,
     budget: '',
-    interests: [] as string[],
+    interests: [],
   });
 
   const interests = [
@@ -59,6 +67,13 @@ const TravelForm: React.FC<TravelFormProps> = ({ onSubmit, isLoading }) => {
 
       <form onSubmit={handleSubmit} className="p-8">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {error && (
+            <div className="col-span-2 mb-4">
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                <span className="block sm:inline">{error}</span>
+              </div>
+            </div>
+          )}
           <div className="col-span-2">
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Where would you like to go?

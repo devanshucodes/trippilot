@@ -1,183 +1,101 @@
 import React, { useState } from 'react';
+import type { Itinerary } from '../types';
 import { motion } from 'framer-motion';
-import { Plane, Map } from 'lucide-react';
+import { Plane, Map, AlertCircle } from 'lucide-react';
 import TravelForm from './TravelForm';
 import ItineraryView from './Itinerary/ItineraryView';
 import { generateItinerary } from '../services/openai';
 
 const TravelAgent: React.FC = () => {
+  // --- UI Enhancement: Background styling ---
+  // The background will be set via a gradient div below.
+
   const [showItinerary, setShowItinerary] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [currentItinerary, setCurrentItinerary] = useState(null);
+  const [currentItinerary, setCurrentItinerary] = useState<Itinerary | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleFormSubmit = async (formData: any) => {
     setIsLoading(true);
+    setError(null);
     try {
+      console.log('Submitting form with data:', formData);
       const itinerary = await generateItinerary(formData);
       setCurrentItinerary(itinerary);
       setShowItinerary(true);
     } catch (error) {
-      console.error('Error generating itinerary:', error);
-      // Use mock data as fallback when API call fails
-      setCurrentItinerary(mockItinerary);
-      setShowItinerary(true);
+      console.error('Error in handleFormSubmit:', error);
+      if (error instanceof Error) {
+        setError(error.message);
+      } else {
+        setError('An unexpected error occurred. Please try again.');
+      }
+      setCurrentItinerary(null);
+      setShowItinerary(false);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Mock data for the demo
-  const mockItinerary = {
-    id: '123',
-    destination: 'Paris',
-    startDate: new Date('2023-06-15'),
-    endDate: new Date('2023-06-22'),
-    flights: [
-      {
-        id: 'fl1',
-        airline: 'Air France',
-        departureAirport: 'JFK',
-        arrivalAirport: 'CDG',
-        departureTime: new Date('2023-06-15T09:00:00'),
-        arrivalTime: new Date('2023-06-15T22:30:00'),
-        price: 850,
-        duration: '8h 30m',
-        stops: 0,
-      },
-      {
-        id: 'fl2',
-        airline: 'Delta Airlines',
-        departureAirport: 'CDG',
-        arrivalAirport: 'JFK',
-        departureTime: new Date('2023-06-22T11:00:00'),
-        arrivalTime: new Date('2023-06-22T14:30:00'),
-        price: 890,
-        duration: '9h 30m',
-        stops: 1,
-      },
-    ],
-    accommodations: [
-      {
-        id: 'ht1',
-        name: 'Le Grand Hotel Paris',
-        location: 'Rue de Rivoli, 75001 Paris',
-        pricePerNight: 220,
-        rating: 4.7,
-        amenities: ['Free WiFi', 'Spa', 'Restaurant', 'Room Service', 'Fitness Center'],
-        image: 'https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260',
-      },
-    ],
-    activities: [
-      {
-        day: 1,
-        date: new Date('2023-06-15'),
-        activities: [
-          {
-            time: '15:00',
-            description: 'Check-in at Le Grand Hotel Paris',
-            location: 'Rue de Rivoli, 75001 Paris',
-            duration: '30m',
-          },
-          {
-            time: '18:00',
-            description: 'Welcome dinner at Le Jules Verne',
-            location: 'Eiffel Tower, Champ de Mars',
-            duration: '2h',
-            cost: 150,
-          },
-        ],
-      },
-      {
-        day: 2,
-        date: new Date('2023-06-16'),
-        activities: [
-          {
-            time: '09:00',
-            description: 'Visit the Louvre Museum',
-            location: 'Rue de Rivoli, 75001 Paris',
-            duration: '3h',
-            cost: 15,
-          },
-          {
-            time: '13:00',
-            description: 'Lunch at Café Marly',
-            location: 'Palais du Louvre',
-            duration: '1h 30m',
-            cost: 35,
-          },
-          {
-            time: '15:00',
-            description: 'Explore Montmartre',
-            location: 'Montmartre, 75018 Paris',
-            duration: '2h',
-          },
-          {
-            time: '19:00',
-            description: 'Dinner at Le Consulat',
-            location: 'Montmartre',
-            duration: '1h 30m',
-            cost: 45,
-          },
-        ],
-      },
-      {
-        day: 3,
-        date: new Date('2023-06-17'),
-        activities: [
-          {
-            time: '10:00',
-            description: 'Visit Eiffel Tower',
-            location: 'Champ de Mars, 5 Avenue Anatole France',
-            duration: '2h',
-            cost: 25,
-          },
-          {
-            time: '13:00',
-            description: 'Seine River Cruise',
-            location: 'Port de la Conférence',
-            duration: '1h',
-            cost: 15,
-          },
-        ],
-      },
-    ],
-  };
+  // (Removed mockItinerary and related code)
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-neutral-50 to-neutral-100">
-      <header className="bg-white/80 backdrop-blur-sm border-b border-gray-200 sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <div className="flex items-center space-x-3">
-            <div className="bg-gradient-to-r from-primary-600 to-primary-700 text-white p-2 rounded-lg">
-              <Plane size={24} />
-            </div>
-            <h1 className="text-2xl font-display font-semibold text-gray-800">TripPilot</h1>
-          </div>
-          {showItinerary && (
-            <button 
-              className="flex items-center space-x-2 py-2 px-4 rounded-lg transition text-primary-600 hover:bg-primary-50"
-              onClick={() => setShowItinerary(false)}
-            >
-              <Map size={20} />
-              <span>Back to Form</span>
-            </button>
-          )}
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-100 relative">
+      {/* Header */}
+      <header className="w-full py-6 flex items-center justify-center bg-white/80 shadow-md z-10">
+        <div className="flex items-center gap-3">
+          <span className="bg-gradient-to-tr from-blue-400 to-purple-500 p-2 rounded-lg text-white">
+            <Plane size={32} />
+          </span>
+          <h1 className="text-2xl md:text-3xl font-extrabold font-display text-gray-800 tracking-tight">TripPilot AI</h1>
         </div>
-      </header>
-      
-      <main className="container mx-auto px-4 py-12">
-        {!showItinerary ? (
-          <TravelForm onSubmit={handleFormSubmit} isLoading={isLoading} />
-        ) : (
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ type: 'spring', damping: 25 }}
+        {showItinerary && (
+          <button 
+            className="ml-8 flex items-center space-x-2 py-2 px-4 rounded-lg transition text-primary-600 hover:bg-primary-50"
+            onClick={() => setShowItinerary(false)}
           >
-            <ItineraryView itinerary={currentItinerary || mockItinerary} />
-          </motion.div>
+            <Map size={20} />
+            <span>Back to Form</span>
+          </button>
         )}
+      </header>
+
+      {/* Main Content */}
+      <main className="flex-1 flex flex-col items-center justify-center px-2 py-8 md:py-16">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7 }}
+          className="w-full max-w-4xl bg-white/90 rounded-3xl shadow-2xl p-8 md:p-12 flex flex-col items-center"
+        >
+          {!showItinerary && (
+            <TravelForm onSubmit={handleFormSubmit} isLoading={isLoading} error={error} />
+          )}
+          {isLoading && (
+            <div className="mt-8 flex flex-col items-center">
+              <span className="animate-spin text-primary-500"><Map size={36} /></span>
+              <span className="mt-2 text-primary-700 font-medium">Generating your itinerary...</span>
+            </div>
+          )}
+          {error && !isLoading && (
+            <div className="w-full mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+              <AlertCircle className="text-red-500 mt-1 mr-3" size={20} />
+              <div>
+                <h3 className="text-red-800 font-medium">Error Generating Itinerary</h3>
+                <p className="text-red-600 text-sm mt-1">{error}</p>
+              </div>
+            </div>
+          )}
+          {showItinerary && !isLoading && currentItinerary && (
+            <ItineraryView itinerary={currentItinerary} />
+          )}
+        </motion.div>
       </main>
+
+      {/* Footer */}
+      <footer className="w-full py-4 text-center text-xs text-gray-400 bg-white/70 border-t mt-8">
+        © {new Date().getFullYear()} TripPilot AI. Built with ❤️ for travel enthusiasts. Demo only – do not share API keys.
+      </footer>
     </div>
   );
 };
